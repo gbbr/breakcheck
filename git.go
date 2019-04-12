@@ -117,12 +117,15 @@ func gitLsTreeGoBlobs(ref, path string) ([]string, error) {
 		}
 		chops := strings.Fields(line)
 		if n := len(chops); n != 4 {
-			return nil, fmt.Errorf("line split into %d", n)
+			return nil, fmt.Errorf("ls-tree: unexpected line: %s", line)
 		}
 		if chops[1] != "blob" {
 			continue
 		}
 		if filepath.Ext(chops[3]) != ".go" {
+			continue
+		}
+		if strings.HasSuffix(chops[3], "_test.go") {
 			continue
 		}
 		blobs = append(blobs, chops[3])

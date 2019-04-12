@@ -4,8 +4,86 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"io"
 	"strings"
 )
+
+func printFuncDecl(v *ast.FuncDecl) {
+	fmt.Println(printFunc(v.Recv, v.Name, v.Type))
+}
+
+func printFunc(
+	recv *ast.FieldList,
+	name *ast.Ident,
+	typ *ast.FuncType,
+) string {
+	var s strings.Builder
+	s.WriteString("func ")
+	if name != nil {
+		if recv := fieldListType(recv); recv != "" {
+			s.WriteByte('(')
+			s.WriteString(recv)
+			s.WriteByte(')')
+			s.WriteByte(' ')
+		}
+		s.WriteString(name.Name)
+	}
+	s.WriteByte('(')
+	writeArgs(&s, describeFieldList(typ.Params))
+	s.WriteByte(')')
+	if typ.Results != nil && len(typ.Results.List) > 0 {
+		s.WriteByte(' ')
+		s.WriteByte('(')
+		writeArgs(&s, describeFieldList(typ.Results))
+		s.WriteByte(')')
+	}
+	return s.String()
+}
+
+func printValueSpec(v *ast.ValueSpec) {
+	fmt.Println(printValue(v))
+}
+
+func printValue(v *ast.ValueSpec) string {
+	var s strings.Builder
+	t := describeType(v.Type)
+	// TODO(gbbr):
+	// Doesn't work for var A = []int{1,2,3}
+	for _, name := range v.Names {
+		if !ast.IsExported(name.Name) {
+			continue
+		}
+		if name.Obj != nil {
+			switch name.Obj.Kind {
+			case ast.Con:
+				s.WriteString("const ")
+			case ast.Var:
+				s.WriteString("var ")
+			}
+		}
+		s.WriteString(name.Name)
+		s.WriteByte(' ')
+		s.WriteString(t)
+	}
+	if s.Len() > 0 {
+		return s.String()
+	}
+	return ""
+}
+
+func printType(v *ast.TypeSpec) {
+	fmt.Println("type", v.Name.Name, describeType(v.Type))
+}
+
+// writeArgs pretty-prints a list of arguments (e.g. ["1", "2", "3"] => "1, 2, 3")
+func writeArgs(s io.StringWriter, args []string) {
+	for i, arg := range args {
+		s.WriteString(arg)
+		if i < len(args)-1 {
+			s.WriteString(", ")
+		}
+	}
+}
 
 func fieldListType(list *ast.FieldList) string {
 	types := describeFieldList(list)
@@ -88,7 +166,11 @@ func describeType(t ast.Expr) string {
 			case *ast.BasicLit:
 				name = "[" + x.Value + "]" + describeType(v.Elt)
 				return false
+			case *ast.Ident:
+				name = "[" + x.Name + "]" + describeType(v.Elt)
+				return false
 			default:
+				// TODO: this can't stay
 				panic(fmt.Sprintf("unexpected array type %T: [%#v]%s\n", v.Len, v.Len, describeType(v.Elt)))
 			}
 
@@ -161,46 +243,15 @@ func describeInterfaceType(v *ast.InterfaceType) string {
 		if i == 0 {
 			s.WriteByte('\n')
 		}
-		if len(field.Names) == 0 {
-			// should not be possible
-			continue
-		}
 		ft, ok := field.Type.(*ast.FuncType)
 		if !ok {
 			// should not be possible
 			continue
 		}
-		fd := funcData{
-			name: field.Names[0].Name,
-			args: describeFieldList(ft.Params),
-			rets: describeFieldList(ft.Results),
-		}
 		s.WriteByte('\t')
-		s.WriteString(fd.String())
+		s.WriteString(printFunc(nil, field.Names[0], ft))
 		s.WriteByte('\n')
 	}
 	s.WriteByte('}')
 	return s.String()
-}
-
-// returns the value and true if it has at least 1 exported ident.
-func describeValue(v *ast.ValueSpec) (string, bool) {
-	var s strings.Builder
-	var i int
-	for _, name := range v.Names {
-		if !ast.IsExported(name.Name) {
-			continue
-		}
-		if i > 0 {
-			s.WriteString(", ")
-		}
-		s.WriteString(name.Name)
-		i++
-	}
-	if i == 0 {
-		return "", false
-	}
-	s.WriteByte(' ')
-	s.WriteString(describeType(v.Type))
-	return s.String(), true
 }
