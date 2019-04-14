@@ -2,10 +2,12 @@ package main
 
 import (
 	"go/ast"
+	"go/token"
 	"strings"
 )
 
 type packageSummary struct {
+	fset  *token.FileSet
 	path  string                    // relative folder
 	funcs map[string]*ast.FuncDecl  // maps (recv.)name to func
 	types map[string]*ast.TypeSpec  // maps type name to spec
@@ -13,8 +15,9 @@ type packageSummary struct {
 	// TODO: add package name, ensure it wasn't changed
 }
 
-func newPackageSummary(path string) *packageSummary {
+func newPackageSummary(fset *token.FileSet, path string) *packageSummary {
 	return &packageSummary{
+		fset:  fset,
 		path:  path,
 		funcs: make(map[string]*ast.FuncDecl),
 		value: make(map[string]*ast.ValueSpec),

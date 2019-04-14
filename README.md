@@ -1,6 +1,6 @@
 # breakcheck
 
-breackcheck checks exported values, types and function declarations in your working tree for potential breaking changes against a given git reference. 
+breakcheck checks exported values, types and function declarations in your working tree for potential breaking changes against a given git reference. 
 
 ## Usage
 
@@ -23,19 +23,32 @@ Flags:
 Below is an example output from running breakcheck against the datadog-agent repository:
 
 ```
-$ breakcheck --base=head~40
+$ breakcheck --base=HEAD~40
 pkg/util/clusteragent:
-	• removed: struct DCAClient, field ClusterAgentAPIEndpoint
-	• changed: struct DCAClient, field ClusterAgentVersion type from string to version.Version
-	•  before: func GetClusterAgentClient() (*DCAClient, error)
-	      now: func GetClusterAgentClient() (DCAClientInterface, error)
-	           (return value 0 changed from *DCAClient to DCAClientInterface)
-
-pkg/logs/config:
-	• removed: const ContainerdType 
+  
+• Removed struct field "ClusterAgentAPIEndpoint":
+    - clusteragent.go:42@HEAD~40:
+        struct DCAClient
+    - clusteragent.go:57:
+        struct DCAClient
+  
+• Struct field "ClusterAgentVersion" type changed from string to version.Version:
+    - clusteragent.go:42@HEAD~40:
+        DCAClient
+  
+• Return value (0) changed from *DCAClient to DCAClientInterface:
+    - clusteragent.go:60@HEAD~40:
+        func GetClusterAgentClient() (*DCAClient, error)
+    - clusteragent.go:75:
+        func GetClusterAgentClient() (DCAClientInterface, error)
 ```
 
 ## Caveats
 
 * If a function's argument is changed to an alias of the same type, breakcheck will fail to detect this and will report it as a change. Technically this is not a breaking change.
 * Detecting changes in exported package level value declarations is limited to their name and type (when known). 
+
+## Similar work
+
+* https://golang.org/x/tools/internal/apidiff
+* https://github.com/bradleyfalzon/apicompat

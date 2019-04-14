@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	baseRef  = flag.String("base", "head", "git reference to compare against")
+	baseRef  = flag.String("base", "HEAD", "git reference to compare against")
 	verbose  = flag.Bool("v", false, "enable verbose mode")
 	privRecv = flag.Bool("private", false, "include exported methods with private receivers")
 )
@@ -82,7 +82,7 @@ func main() {
 		}
 
 		// create working path summary
-		summary := newPackageSummary(dir)
+		summary := newPackageSummary(fsetHead, dir)
 		for _, d := range list {
 			if d.IsDir() || !strings.HasSuffix(d.Name(), ".go") || strings.HasSuffix(d.Name(), "_test.go") {
 				continue
@@ -99,7 +99,7 @@ func main() {
 		}
 
 		// scan base, everything found there should exist in working path
-		comparer := newDeclComparer(summary)
+		comparer := newDeclComparer(fsetBase, dir, summary)
 		blobs, err := gitLsTreeGoBlobs(*baseRef, dir)
 		if err != nil {
 			log.Fatal(err)
