@@ -95,7 +95,7 @@ func gitBlob(ref, path string) (io.Reader, error) {
 		buf    bytes.Buffer
 		errbuf strings.Builder
 	)
-	cmd := exec.Command("git", "cat-file", "blob", ref+":"+path)
+	cmd := exec.Command("git", "cat-file", "blob", ref+":./"+path)
 	cmd.Stdout = &buf
 	cmd.Stderr = &errbuf
 	if err := cmd.Run(); err != nil {
