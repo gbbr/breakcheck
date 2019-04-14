@@ -13,9 +13,8 @@ import (
 )
 
 var (
-	baseRef  = flag.String("base", "head", "git reference to compare against")
-	verbose  = flag.Bool("v", false, "enable verbose mode")
-	vverbose = flag.Bool("vv", false, "print everything (not recommended)")
+	baseRef = flag.String("base", "head", "git reference to compare against")
+	verbose = flag.Bool("v", false, "enable verbose mode")
 )
 
 type checker struct {
@@ -25,9 +24,6 @@ type checker struct {
 
 func main() {
 	flag.Parse()
-	if *vverbose {
-		*verbose = true
-	}
 	stats, err := gitStats(*baseRef)
 	if err != nil {
 		log.Fatal(err)
