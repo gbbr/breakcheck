@@ -14,7 +14,6 @@ import (
 
 var (
 	baseRef  = flag.String("base", "head", "git reference to compare against")
-	exitCode = flag.Int("exit-code", 0, "exit code to use when failing")
 	verbose  = flag.Bool("v", false, "enable verbose mode")
 	vverbose = flag.Bool("vv", false, "print everything (not recommended)")
 )
@@ -57,7 +56,6 @@ func main() {
 		pkgs[dir] = struct{}{}
 	}
 
-	var failed bool
 	fsetHead := token.NewFileSet()
 	fsetBase := token.NewFileSet()
 	for dir := range pkgs {
@@ -116,11 +114,7 @@ func main() {
 		}
 		if comparer.report.Len() > 0 {
 			fmt.Println(comparer.report.String())
-			failed = true
 		}
-	}
-	if failed {
-		os.Exit(*exitCode)
 	}
 }
 
