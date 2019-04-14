@@ -47,22 +47,20 @@ func (c *declComparer) Visit(node ast.Node) ast.Visitor {
 func (c *declComparer) compareType(base *ast.TypeSpec) {
 	head, ok := c.head.types[base.Name.Name]
 	if !ok {
-		c.logf("removed: type %s", base.Name.Name)
+		c.logf("• removed: type %s", base.Name.Name)
 		return
 	}
 	if x, ok := base.Type.(*ast.StructType); ok {
 		// compare structs, allow adding new fields
 		y, ok := head.Type.(*ast.StructType)
 		if !ok {
-			c.logf("type %s changed from struct to %s", base.Name.Name, describeType(head.Type))
+			c.logf("• changed: struct %s type changed to %s", base.Name.Name, describeType(head.Type))
 		}
 		c.compareStructs(base.Name.Name, x, y)
 		return
 	}
 	if a, b := describeType(base.Type), describeType(head.Type); a != b {
-		c.logf("type changed: %s", base.Name.Name)
-		c.logf("\tfrom: %s", a)
-		c.logf("\t  to: %s", b)
+		c.logf("• changed: type %s from %s to %s", base.Name.Name, a, b)
 	}
 }
 
@@ -72,13 +70,13 @@ func (c *declComparer) compareStructs(structName string, base, head *ast.StructT
 			for _, n := range f.Names {
 				if n.Name == name {
 					if a, b := describeType(f.Type), describeType(typ); a != b {
-						c.logf("struct %s field %s changed type from %s to %s", structName, name, b, a)
+						c.logf("• changed: struct %s, field %s type from %s to %s", structName, name, b, a)
 					}
 					return
 				}
 			}
 		}
-		c.logf("struct field %s.%s was removed", structName, name)
+		c.logf("• removed: struct %s, field %s", structName, name)
 	}
 	for _, field := range base.Fields.List {
 		for _, name := range field.Names {
@@ -91,11 +89,11 @@ func (c *declComparer) compareValue(base *ast.ValueSpec) {
 	for _, name := range base.Names {
 		head, ok := c.head.value[name.Name]
 		if !ok {
-			c.logf("removed: %s", printValue(base))
+			c.logf("• removed: %s", printValue(base))
 			return
 		}
 		if a, b := describeType(head.Type), describeType(base.Type); a != b {
-			c.logf("type changed for value %s, from %s to %s", name.Name, b, a)
+			c.logf("• changed: value type %s from %s to %s", name.Name, b, a)
 		}
 		if base.Type == nil {
 			// If the type is nil, this is likely an assignment where the type is inferred
@@ -113,7 +111,7 @@ func (c *declComparer) compareFunc(base *ast.FuncDecl) {
 	head, ok := c.head.funcs[name]
 	if !ok {
 		// func not found
-		c.logf("removed: %s", printFunc(base.Recv, base.Name, base.Type))
+		c.logf("• removed: %s", printFunc(base.Recv, base.Name, base.Type))
 		return
 	}
 	headArgs := head.Type.Params.List
@@ -159,9 +157,9 @@ func (c *declComparer) compareFunc(base *ast.FuncDecl) {
 }
 
 func (c *declComparer) logFuncChange(base, head *ast.FuncDecl, reason string) {
-	c.logf(" before: %s", printFunc(base.Recv, base.Name, base.Type))
-	c.logf("    now: %s", printFunc(head.Recv, head.Name, head.Type))
-	c.logf("         (%s)", reason)
+	c.logf("•  before: %s", printFunc(base.Recv, base.Name, base.Type))
+	c.logf("      now: %s", printFunc(head.Recv, head.Name, head.Type))
+	c.logf("           (%s)", reason)
 }
 
 func (c *declComparer) logf(format string, args ...interface{}) {
