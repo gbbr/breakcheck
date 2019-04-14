@@ -18,6 +18,23 @@ Flags:
   -v	enable verbose mode
 ```
 
+## Example
+
+Below is an example output from running breakcheck against the datadog-agent repository:
+
+```
+$ breakcheck --base=head~40
+pkg/util/clusteragent:
+	• removed: struct DCAClient, field ClusterAgentAPIEndpoint
+	• changed: struct DCAClient, field ClusterAgentVersion type from string to version.Version
+	•  before: func GetClusterAgentClient() (*DCAClient, error)
+	      now: func GetClusterAgentClient() (DCAClientInterface, error)
+	           (return value 0 changed from *DCAClient to DCAClientInterface)
+
+pkg/logs/config:
+	• removed: const ContainerdType 
+```
+
 ## Caveats
 
 * If a function's argument is changed to an alias of the same type, breakcheck will fail to detect this and will report it as a change. Technically this is not a breaking change.
