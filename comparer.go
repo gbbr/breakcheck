@@ -50,7 +50,7 @@ func (c *declComparer) compareType(base *ast.TypeSpec) {
 		c.fail("removed: type %s", base.Name.Name)
 	}
 	_ = head
-	// TODO: compare types, for structs compare fields, etc.
+	// TODO
 }
 
 func (c *declComparer) compareValue(base *ast.ValueSpec) {
@@ -61,15 +61,13 @@ func (c *declComparer) compareValue(base *ast.ValueSpec) {
 			return
 		}
 		if a, b := describeType(head.Type), describeType(base.Type); a != b {
-			c.fail("type changed for %q: before %s, now %s", name.Name, b, a)
-			return
+			c.fail("type changed for value %s, from %s to %s", name.Name, b, a)
 		}
-		_ = head
-		// TODO: compare values
-		// and also values without types, which can have the form:
-		// var a = struct{
-		//     ...
-		// }{ ... }
+		if base.Type == nil {
+			// If the type is nil, this is likely an assignment where the type is inferred
+			// at compile time. In that case, a breaking change could be a change in value.
+			// TODO
+		}
 	}
 }
 

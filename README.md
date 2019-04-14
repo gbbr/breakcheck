@@ -5,4 +5,4 @@ breackcheck checks exported values, types and function declarations in your work
 ## Caveats
 
 * If a function's argument is changed to an alias of the same type, breakcheck will fail to detect this and will report it as a change. Technically this is not a breaking change.
-* Changes in exported package level value declarations are limited to name and type (if known). 
+* Detecting changes in exported package level value declarations is limited to their name and type (when known). 
