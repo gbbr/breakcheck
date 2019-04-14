@@ -83,7 +83,7 @@ func main() {
 			fullpath := filepath.Join(dir, d.Name())
 			src, err := parser.ParseFile(fsetHead, fullpath, nil, parser.DeclarationErrors)
 			if err != nil {
-				log.Fatal("parsefile: ", err)
+				log.Fatal("parser.ParseFile: ", err)
 			}
 			if !ast.FileExports(src) {
 				continue
@@ -98,14 +98,13 @@ func main() {
 			log.Fatal(err)
 		}
 		for _, file := range blobs {
-			fullpath := filepath.Join(dir, file)
-			r, err := gitBlob(*baseRef, fullpath)
+			r, err := gitBlob(*baseRef, file)
 			if err != nil {
 				log.Fatal(err)
 			}
-			src, err := parser.ParseFile(fsetBase, fullpath, r, parser.DeclarationErrors)
+			src, err := parser.ParseFile(fsetBase, file, r, parser.DeclarationErrors)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("parser.ParseFile: %s", err)
 			}
 			if !ast.FileExports(src) {
 				continue

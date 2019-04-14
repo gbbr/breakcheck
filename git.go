@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -54,11 +53,12 @@ type fileStat struct {
 }
 
 func gitStats(ref string) ([]*fileStat, error) {
-	var buf strings.Builder
-	cmd := exec.Command("git", "diff", "--numstat", "--name-status", ref)
+	var buf, errbuf strings.Builder
+	cmd := exec.Command("git", "diff", "--numstat", "--name-status", "--relative", ref)
 	cmd.Stdout = &buf
+	cmd.Stderr = &errbuf
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("error running git: %s", err)
+		return nil, fmt.Errorf("git diff: %s", errbuf.String())
 	}
 	lines := strings.Split(buf.String(), "\n")
 	changes := make([]*fileStat, 0, len(lines))
@@ -68,7 +68,7 @@ func gitStats(ref string) ([]*fileStat, error) {
 		}
 		chops := strings.SplitN(line, "\t", 3)
 		if len(chops) < 2 || len(chops[0]) == 0 {
-			return nil, fmt.Errorf("unexpected git output: %q", line)
+			return nil, fmt.Errorf("git diff: unexpected line: %q", line)
 		}
 		mod := chops[0][0]
 		if strings.IndexByte(validChangeTypes, mod) == -1 {
@@ -81,7 +81,7 @@ func gitStats(ref string) ([]*fileStat, error) {
 		}
 		if changeMode(mod) == modeRenamed {
 			if len(chops) != 3 {
-				return nil, fmt.Errorf("unexpected git output: %q", line)
+				return nil, fmt.Errorf("git diff: unexpected line: %q", line)
 			}
 			change.path = chops[2]
 		}
@@ -91,23 +91,30 @@ func gitStats(ref string) ([]*fileStat, error) {
 }
 
 func gitBlob(ref, path string) (io.Reader, error) {
-	var buf bytes.Buffer
+	var (
+		buf    bytes.Buffer
+		errbuf strings.Builder
+	)
 	cmd := exec.Command("git", "cat-file", "blob", ref+":"+path)
 	cmd.Stdout = &buf
-	return &buf, cmd.Run()
+	cmd.Stderr = &errbuf
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("git cat-file: %s", errbuf.String())
+	}
+	return &buf, nil
 }
 
 // gitLsTreeGoBlobs lists all .go files at the ref:path
 func gitLsTreeGoBlobs(ref, path string) ([]string, error) {
 	var buf, errbuf strings.Builder
-	cmd := exec.Command("git", "ls-tree", ref+":"+path)
+	if !strings.HasSuffix(path, "/") {
+		path += "/"
+	}
+	cmd := exec.Command("git", "ls-tree", ref, path)
 	cmd.Stdout = &buf
 	cmd.Stderr = &errbuf
 	if err := cmd.Run(); err != nil {
-		if strings.Contains(errbuf.String(), "Not a valid object name") {
-			return nil, os.ErrNotExist
-		}
-		return nil, fmt.Errorf("git ls-tree %s:%s: %s", ref, path, err)
+		return nil, fmt.Errorf("git ls-tree %s:%s: %s", ref, path, errbuf.String())
 	}
 	lines := strings.Split(buf.String(), "\n")
 	blobs := make([]string, 0, len(lines))
@@ -117,7 +124,7 @@ func gitLsTreeGoBlobs(ref, path string) ([]string, error) {
 		}
 		chops := strings.Fields(line)
 		if n := len(chops); n != 4 {
-			return nil, fmt.Errorf("ls-tree: unexpected line: %s", line)
+			return nil, fmt.Errorf("git ls-tree: unexpected line: %s", line)
 		}
 		if chops[1] != "blob" {
 			continue

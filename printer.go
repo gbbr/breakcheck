@@ -8,15 +8,9 @@ import (
 	"strings"
 )
 
-func printFuncDecl(v *ast.FuncDecl) {
-	fmt.Println(printFunc(v.Recv, v.Name, v.Type))
-}
+func printFuncDecl(v *ast.FuncDecl) { fmt.Println(printFunc(v.Recv, v.Name, v.Type)) }
 
-func printFunc(
-	recv *ast.FieldList,
-	name *ast.Ident,
-	typ *ast.FuncType,
-) string {
+func printFunc(recv *ast.FieldList, name *ast.Ident, typ *ast.FuncType) string {
 	var s strings.Builder
 	s.WriteString("func ")
 	if name != nil {
@@ -40,15 +34,12 @@ func printFunc(
 	return s.String()
 }
 
-func printValueSpec(v *ast.ValueSpec) {
-	fmt.Println(printValue(v))
-}
+func printValueSpec(v *ast.ValueSpec) { fmt.Println(printValue(v)) }
 
 func printValue(v *ast.ValueSpec) string {
 	var s strings.Builder
 	t := describeType(v.Type)
-	// TODO(gbbr):
-	// Doesn't work for var A = []int{1,2,3}
+	// TODO(gbbr): doesn't work for untyped values (var A = ...)
 	for _, name := range v.Names {
 		if !ast.IsExported(name.Name) {
 			continue
@@ -71,8 +62,10 @@ func printValue(v *ast.ValueSpec) string {
 	return ""
 }
 
-func printType(v *ast.TypeSpec) {
-	fmt.Println("type", v.Name.Name, describeType(v.Type))
+func printTypeSpec(v *ast.TypeSpec) { fmt.Println(printType(v)) }
+
+func printType(v *ast.TypeSpec) string {
+	return fmt.Sprintf("type %s %s", v.Name.Name, describeType(v.Type))
 }
 
 // writeArgs pretty-prints a list of arguments (e.g. ["1", "2", "3"] => "1, 2, 3")

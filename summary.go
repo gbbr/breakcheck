@@ -59,7 +59,7 @@ func funcName(v *ast.FuncDecl) (string, bool) {
 	name := v.Name.Name
 	if recv := fieldListType(v.Recv); recv != "" {
 		name = recv + "." + v.Name.Name
-		if !ast.IsExported(strings.TrimPrefix(recv, "*")) {
+		if !ast.IsExported(strings.TrimPrefix(recv, "(*")) {
 			// an exported method un an unexported receiver, skip
 			return name, false
 		}
