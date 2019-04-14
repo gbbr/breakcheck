@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	baseRef = flag.String("base", "head", "git reference to compare against")
-	verbose = flag.Bool("v", false, "enable verbose mode")
+	baseRef  = flag.String("base", "head", "git reference to compare against")
+	verbose  = flag.Bool("v", false, "enable verbose mode")
+	privRecv = flag.Bool("private", false, "include exported methods with private receivers")
 )
 
 type checker struct {
@@ -22,8 +23,18 @@ type checker struct {
 	fsetold *token.FileSet
 }
 
-func main() {
+func init() {
+	flag.CommandLine.Usage = func() {
+		fmt.Fprintln(flag.CommandLine.Output(), "Example usage:")
+		fmt.Fprintln(flag.CommandLine.Output(), "  breakcheck               # compares working tree against git head")
+		fmt.Fprintln(flag.CommandLine.Output(), "  breakcheck --base=v1.0.0 # compares against tag v1.0.0")
+		fmt.Fprintln(flag.CommandLine.Output(), "\nFlags:")
+		flag.PrintDefaults()
+	}
 	flag.Parse()
+}
+
+func main() {
 	stats, err := gitStats(*baseRef)
 	if err != nil {
 		log.Fatal(err)
