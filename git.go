@@ -132,7 +132,7 @@ func gitLsTreeGoBlobs(ref, path string) ([]string, error) {
 		if filepath.Ext(chops[3]) != ".go" {
 			continue
 		}
-		if strings.HasSuffix(chops[3], "_test.go") {
+		if strings.Contains(chops[3], "_test.") {
 			continue
 		}
 		blobs = append(blobs, chops[3])
