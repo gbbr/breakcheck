@@ -83,7 +83,7 @@ func (c *declComparer) compareStructs(structName string, base, head *ast.StructT
 					if a, b := describeType(f.Type), describeType(typ); a != b {
 						c.logf("\n• Struct field %q type changed from %s to %s:", name, b, a)
 						c.logPosition(base, true)
-						c.logf("      %s", structName)
+						c.logf("      struct %s", structName)
 					}
 					return
 				}

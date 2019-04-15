@@ -34,7 +34,7 @@ pkg/util/clusteragent:
   
 • Struct field "ClusterAgentVersion" type changed from string to version.Version:
     - clusteragent.go:42@HEAD~40:
-        DCAClient
+        struct DCAClient
   
 • Return value (0) changed from *DCAClient to DCAClientInterface:
     - clusteragent.go:60@HEAD~40:
