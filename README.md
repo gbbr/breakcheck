@@ -24,22 +24,29 @@ Below is an example output from running breakcheck against the datadog-agent rep
 
 ```
 $ breakcheck --base=HEAD~40
+
+pkg/logs/config:
+  
+• Removed:
+    < integration_config.go:17@HEAD~40:
+        const ContainerdType 
+
 pkg/util/clusteragent:
   
-• Removed struct field "ClusterAgentAPIEndpoint":
-    - clusteragent.go:42@HEAD~40:
+• Struct field "ClusterAgentAPIEndpoint" removed in struct "DCAClient":
+    < clusteragent.go:42@HEAD~40:
         struct DCAClient
-    - clusteragent.go:57:
-        struct DCAClient
-  
-• Struct field "ClusterAgentVersion" type changed from string to version.Version:
-    - clusteragent.go:42@HEAD~40:
+    > clusteragent.go:57:
         struct DCAClient
   
-• Return value (0) changed from *DCAClient to DCAClientInterface:
-    - clusteragent.go:60@HEAD~40:
+• Struct field "ClusterAgentVersion" type changed from "string" to "version.Version":
+    < clusteragent.go:42@HEAD~40:
+        struct DCAClient
+  
+• Function return value (0) type changed from "*DCAClient" to "DCAClientInterface":
+    < clusteragent.go:60@HEAD~40:
         func GetClusterAgentClient() (*DCAClient, error)
-    - clusteragent.go:75:
+    > clusteragent.go:75:
         func GetClusterAgentClient() (DCAClientInterface, error)
 ```
 
