@@ -48,6 +48,11 @@ pkg/util/clusteragent:
 * If a function's argument is changed to an alias of the same type, breakcheck will fail to detect this and will report it as a change. Technically this is not a breaking change.
 * Detecting changes in exported package level value declarations is limited to their name and type (when known). 
 
+
+## Contributing
+
+Contributions and feedback are very welcome.
+
 ## Similar work
 
 * https://golang.org/x/tools/internal/apidiff
