@@ -51,7 +51,7 @@ pkg/util/clusteragent:
 
 ## Contributing
 
-Contributions and feedback are very welcome.
+Contributions and feedback are very welcome, but please open an issue to discuss ideas before submitting to any work.
 
 ## Similar work
 
