@@ -69,7 +69,7 @@ func (c *declComparer) compareType(base *ast.TypeSpec) {
 		return
 	}
 	if a, b := describeType(base.Type), describeType(head.Type); a != b {
-		c.logf("\n• Type changed from %s to %s:", a, b)
+		c.logf("\n• Type changed from %q to %q:", a, b)
 		c.logPosition(base, true)
 		c.logf("      type %s", base.Name.Name)
 	}
@@ -81,7 +81,7 @@ func (c *declComparer) compareStructs(structName string, base, head *ast.StructT
 			for _, n := range f.Names {
 				if n.Name == name {
 					if a, b := describeType(f.Type), describeType(typ); a != b {
-						c.logf("\n• Struct field %q type changed from %s to %s:", name, b, a)
+						c.logf("\n• Struct field %q type changed from %q to %q:", name, b, a)
 						c.logPosition(base, true)
 						c.logf("      struct %s", structName)
 					}
@@ -112,7 +112,7 @@ func (c *declComparer) compareValue(base *ast.ValueSpec) {
 			return
 		}
 		if a, b := describeType(head.Type), describeType(base.Type); a != b {
-			c.logf("\n• Value type changed from %s to %s in working tree:", b, a)
+			c.logf("\n• Value type changed from %q to %q in working tree:", b, a)
 			c.logPosition(base, true)
 			c.logf("      %s", name.Name)
 		}
@@ -149,7 +149,7 @@ func (c *declComparer) compareFunc(base *ast.FuncDecl) {
 	}
 	for i, arg := range baseArgs {
 		if a, b := describeType(arg.Type), describeType(headArgs[i].Type); a != b {
-			c.logFuncChange(base, head, fmt.Sprintf("Argument (%d) changed from %s to %s", i, a, b))
+			c.logFuncChange(base, head, fmt.Sprintf("Argument (%d) changed from %q to %q", i, a, b))
 			return
 		}
 	}
@@ -173,7 +173,7 @@ func (c *declComparer) compareFunc(base *ast.FuncDecl) {
 	}
 	for i, arg := range baseResults.List {
 		if a, b := describeType(arg.Type), describeType(headResults.List[i].Type); a != b {
-			c.logFuncChange(base, head, fmt.Sprintf("Return value (%d) changed from %s to %s", i, a, b))
+			c.logFuncChange(base, head, fmt.Sprintf("Return value (%d) changed from %q to %q", i, a, b))
 			return
 		}
 	}
